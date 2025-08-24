@@ -41,6 +41,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// مصفوفة لحفظ معلومات الملفات (يفضل استخدام قاعدة بيانات في الإنتاج)
+const uploadedFiles = new Map();
+
 // إعداد multer
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -49,6 +52,15 @@ const storage = multer.diskStorage({
   filename: function (req, file, cb) {
     const uniqueName = crypto.randomBytes(16).toString('hex') + '.pdf';
     console.log('🏷️ اسم الملف الجديد:', uniqueName);
+    
+    // حفظ معلومات الملف
+    uploadedFiles.set(uniqueName, {
+      originalName: file.originalname,
+      filename: uniqueName,
+      uploadDate: new Date().toISOString(),
+      mimetype: file.mimetype
+    });
+    
     cb(null, uniqueName);
   }
 });
@@ -137,9 +149,17 @@ app.post('/api/upload', (req, res) => {
         });
       }
       
-      // إنشاء رابط المشاركة
-      const shareUrl = `${req.protocol}://${req.get('host')}/files/${req.file.filename}`;
+      // إنشاء رابط المشاركة (يوجه لصفحة المعاينة)
+      const shareUrl = `${req.protocol}://${req.get('host')}/view/${req.file.filename}`;
       console.log('🔗 رابط المشاركة:', shareUrl);
+      
+      // تحديث معلومات الملف مع الحجم
+      const fileInfo = uploadedFiles.get(req.file.filename);
+      if (fileInfo) {
+        fileInfo.size = req.file.size;
+        uploadedFiles.set(req.file.filename, fileInfo);
+      }
+      
       console.log('✅ تم الرفع بنجاح!\n');
       
       res.json({
@@ -161,7 +181,88 @@ app.post('/api/upload', (req, res) => {
   });
 });
 
-// عرض/تحميل الملفات
+// صفحة معاينة الملف
+app.get('/view/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(uploadsDir, filename);
+  
+  console.log(`👁️ طلب معاينة ملف: ${filename}`);
+  
+  // التحقق من وجود الملف
+  if (!fs.existsSync(filePath)) {
+    console.log('❌ الملف غير موجود');
+    return res.status(404).send(`
+      <!DOCTYPE html>
+      <html lang="ar" dir="rtl">
+      <head>
+        <meta charset="UTF-8">
+        <title>الملف غير موجود</title>
+        <style>
+          body { font-family: Arial; text-align: center; padding: 50px; }
+          h1 { color: #e74c3c; }
+        </style>
+      </head>
+      <body>
+        <h1>❌ الملف غير موجود</h1>
+        <p>الملف المطلوب غير موجود أو تم حذفه</p>
+        <a href="/">العودة للرئيسية</a>
+      </body>
+      </html>
+    `);
+  }
+  
+  // إرسال صفحة المعاينة
+  res.sendFile(path.join(__dirname, 'public', 'view.html'));
+});
+
+// API لمعلومات الملف
+app.get('/api/file-info/:filename', (req, res) => {
+  const filename = req.params.filename;
+  const filePath = path.join(uploadsDir, filename);
+  
+  console.log(`📊 طلب معلومات ملف: ${filename}`);
+  
+  // التحقق من وجود الملف
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({
+      success: false,
+      error: 'الملف غير موجود'
+    });
+  }
+  
+  try {
+    // الحصول على معلومات الملف من النظام
+    const stats = fs.statSync(filePath);
+    
+    // الحصول على المعلومات المحفوظة
+    const savedInfo = uploadedFiles.get(filename) || {};
+    
+    // دمج المعلومات
+    const fileInfo = {
+      filename: filename,
+      originalName: savedInfo.originalName || filename,
+      size: stats.size,
+      uploadDate: savedInfo.uploadDate || stats.birthtime.toISOString(),
+      mimetype: savedInfo.mimetype || 'application/pdf'
+    };
+    
+    console.log('📋 معلومات الملف:', fileInfo);
+    
+    res.json({
+      success: true,
+      ...fileInfo
+    });
+    
+  } catch (error) {
+    console.error('❌ خطأ في قراءة معلومات الملف:', error);
+    res.status(500).json({
+      success: false,
+      error: 'فشل في قراءة معلومات الملف'
+    });
+  }
+});
+
+// عرض/تحميل الملفات (نفس الكود السابق)
 app.get('/files/:filename', (req, res) => {
   const filename = req.params.filename;
   const filePath = path.join(uploadsDir, filename);
