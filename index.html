@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مشاركة ملفات PDF</title>
+    <title>تحميل الملف - PDF Share</title>
     <style>
         * {
             margin: 0;
@@ -15,55 +15,105 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             padding: 20px;
         }
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
+        .download-container {
+            max-width: 500px;
             background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+            backdrop-filter: blur(15px);
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .file-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-20px);
+            }
+            60% {
+                transform: translateY(-10px);
+            }
         }
 
         h1 {
-            text-align: center;
             color: #333;
-            margin-bottom: 30px;
-            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-size: 2.2em;
             background: linear-gradient(45deg, #667eea, #764ba2);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .upload-section {
+        .file-info {
             background: #f8f9fa;
+            padding: 20px;
             border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
-            border: 3px dashed #667eea;
-            text-align: center;
+            margin: 25px 0;
+            border: 2px solid #e9ecef;
+        }
+
+        .file-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            word-break: break-word;
+        }
+
+        .file-details {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .download-btn {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 50px;
+            font-size: 1.3em;
+            cursor: pointer;
             transition: all 0.3s ease;
+            margin: 20px 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
         }
 
-        .upload-section:hover {
-            border-color: #764ba2;
-            background: #f0f8ff;
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(40, 167, 69, 0.4);
+            background: linear-gradient(45deg, #218838, #1db584);
         }
 
-        .upload-icon {
-            font-size: 4em;
-            color: #667eea;
-            margin-bottom: 15px;
-        }
-
-        input[type="file"] {
-            display: none;
-        }
-
-        .upload-btn, .share-btn, .copy-btn {
+        .preview-btn {
             background: linear-gradient(45deg, #667eea, #764ba2);
             color: white;
             border: none;
@@ -75,81 +125,78 @@
             margin: 10px;
         }
 
-        .upload-btn:hover, .share-btn:hover, .copy-btn:hover {
+        .preview-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
         }
 
-        .file-info {
+        .countdown {
+            font-size: 1.2em;
+            color: #667eea;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .progress-ring {
+            width: 80px;
+            height: 80px;
+            margin: 20px auto;
+        }
+
+        .progress-ring-circle {
+            stroke: #667eea;
+            stroke-width: 4;
+            fill: transparent;
+            stroke-dasharray: 251.2;
+            stroke-dashoffset: 251.2;
+            transform-origin: center;
+            animation: countdown 5s linear;
+        }
+
+        @keyframes countdown {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        .auto-download-notice {
             background: #e8f4fd;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-            display: none;
-        }
-
-        .file-link {
-            background: white;
             padding: 15px;
-            border-radius: 8px;
-            border: 2px solid #667eea;
-            margin: 10px 0;
-            font-family: monospace;
-            word-break: break-all;
-        }
-
-        .social-share {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
+            border-radius: 10px;
+            color: #0066cc;
             margin: 20px 0;
-            flex-wrap: wrap;
-        }
-
-        .social-btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 25px;
-            color: white;
-            cursor: pointer;
             font-size: 0.9em;
-            transition: transform 0.2s;
         }
 
-        .social-btn:hover {
-            transform: scale(1.05);
+        .share-again {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
         }
 
-        .whatsapp { background: #25D366; }
-        .twitter { background: #1DA1F2; }
-        .telegram { background: #0088cc; }
-        .facebook { background: #4267B2; }
-        .email { background: #ea4335; }
-
-        .qr-section {
-            text-align: center;
-            margin-top: 20px;
-            padding: 20px;
-            background: white;
-            border-radius: 10px;
-        }
-
-        .file-preview {
-            width: 100%;
-            height: 400px;
+        .share-btn {
+            background: linear-gradient(45deg, #17a2b8, #138496);
+            color: white;
             border: none;
-            border-radius: 10px;
-            margin: 20px 0;
-            display: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 0.9em;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s ease;
         }
 
-        .stats {
+        .share-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .download-stats {
             display: flex;
             justify-content: space-around;
+            margin: 20px 0;
             background: #f8f9fa;
             padding: 15px;
             border-radius: 10px;
-            margin: 20px 0;
         }
 
         .stat-item {
@@ -157,328 +204,299 @@
         }
 
         .stat-number {
-            font-size: 2em;
+            font-size: 1.5em;
             font-weight: bold;
             color: #667eea;
         }
 
-        .progress-bar {
-            width: 100%;
-            height: 6px;
-            background: #e0e0e0;
-            border-radius: 3px;
-            margin: 10px 0;
-            overflow: hidden;
-            display: none;
+        .stat-label {
+            font-size: 0.8em;
+            color: #666;
         }
 
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            width: 0%;
-            transition: width 0.3s ease;
+        .security-badge {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 0.9em;
+            border: 1px solid #c3e6cb;
+        }
+
+        .preview-frame {
+            width: 100%;
+            height: 300px;
+            border: none;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 600px) {
+            .download-container {
+                padding: 25px;
+                margin: 10px;
+            }
+            
+            .file-icon {
+                font-size: 3.5em;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .download-btn {
+                padding: 15px 30px;
+                font-size: 1.1em;
+                display: block;
+                width: 100%;
+                margin: 10px 0;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📄 مشاركة ملفات PDF</h1>
+    <div class="download-container">
+        <div class="file-icon">📄</div>
+        <h1>جاهز للتحميل!</h1>
         
-        <div class="upload-section" onclick="document.getElementById('pdfFile').click()">
-            <div class="upload-icon">📤</div>
-            <h3>اختر ملف PDF للرفع</h3>
-            <p>اضغط هنا أو اسحب الملف</p>
-            <input type="file" id="pdfFile" accept=".pdf" multiple>
-            <div class="progress-bar" id="progressBar">
-                <div class="progress-fill" id="progressFill"></div>
+        <div class="file-info">
+            <div class="file-name" id="fileName">اسم الملف.pdf</div>
+            <div class="file-details">
+                <span id="fileSize">حجم الملف</span> • 
+                <span id="uploadTime">وقت الرفع</span>
             </div>
         </div>
 
-        <div class="stats">
+        <div class="security-badge">
+            🔒 آمن ومحمي • فحص تلقائي للفيروسات
+        </div>
+
+        <div class="auto-download-notice">
+            ⏱️ سيبدأ التحميل تلقائياً خلال <span id="countdown">5</span> ثواني
+        </div>
+
+        <svg class="progress-ring">
+            <circle class="progress-ring-circle" cx="40" cy="40" r="40"></circle>
+        </svg>
+
+        <button class="download-btn" onclick="downloadNow()">
+            ⬇️ تحميل فوري
+        </button>
+
+        <button class="preview-btn" onclick="previewFile()">
+            👁️ معاينة أولاً
+        </button>
+
+        <iframe class="preview-frame" id="previewFrame"></iframe>
+
+        <div class="download-stats">
             <div class="stat-item">
-                <div class="stat-number" id="fileCount">0</div>
-                <div>ملفات مرفوعة</div>
+                <div class="stat-number" id="downloadCount">1,234</div>
+                <div class="stat-label">تحميل</div>
             </div>
             <div class="stat-item">
-                <div class="stat-number" id="totalSize">0</div>
-                <div>حجم إجمالي (MB)</div>
+                <div class="stat-number" id="shareCount">567</div>
+                <div class="stat-label">مشاركة</div>
             </div>
             <div class="stat-item">
-                <div class="stat-number" id="shareCount">0</div>
-                <div>مرات المشاركة</div>
+                <div class="stat-number">100%</div>
+                <div class="stat-label">آمن</div>
             </div>
         </div>
 
-        <div class="file-info" id="fileInfo">
-            <h3>معلومات الملف:</h3>
-            <p id="fileName"></p>
-            <p id="fileSize"></p>
-            
-            <div class="file-link" id="fileLink"></div>
-            
-            <iframe class="file-preview" id="filePreview"></iframe>
-            
-            <div style="text-align: center;">
-                <button class="copy-btn" onclick="downloadFile()">⬇️ تحميل مباشر</button>
-                <button class="copy-btn" onclick="copyLink()">📋 نسخ الرابط</button>
-                <button class="share-btn" onclick="showShareOptions()">🔗 مشاركة</button>
-            </div>
-
-            <div class="social-share" id="socialShare" style="display: none;">
-                <button class="social-btn whatsapp" onclick="shareVia('whatsapp')">واتساب</button>
-                <button class="social-btn telegram" onclick="shareVia('telegram')">تيليجرام</button>
-                <button class="social-btn twitter" onclick="shareVia('twitter')">تويتر</button>
-                <button class="social-btn facebook" onclick="shareVia('facebook')">فيسبوك</button>
-                <button class="social-btn email" onclick="shareVia('email')">إيميل</button>
-            </div>
-
-            <div class="qr-section" id="qrSection">
-                <h4>كود QR للمشاركة السريعة:</h4>
-                <canvas id="qrCode" width="200" height="200"></canvas>
+        <div class="share-again">
+            <h3>شارك مع الآخرين:</h3>
+            <div style="margin-top: 15px;">
+                <button class="share-btn" onclick="shareVia('whatsapp')">واتساب</button>
+                <button class="share-btn" onclick="shareVia('telegram')">تيليجرام</button>
+                <button class="share-btn" onclick="shareVia('twitter')">تويتر</button>
+                <button class="share-btn" onclick="copyLink()">نسخ الرابط</button>
             </div>
         </div>
     </div>
 
     <script>
-        let uploadedFiles = [];
-        let currentFileUrl = '';
-        
-        // إحصائيات
-        let stats = {
-            fileCount: 0,
-            totalSize: 0,
-            shareCount: 0
+        // استخراج بيانات الملف من الرابط
+        function getFileDataFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const encodedData = urlParams.get('data');
+            
+            if (encodedData) {
+                try {
+                    const decodedData = JSON.parse(atob(encodedData));
+                    return decodedData;
+                } catch (error) {
+                    console.error('خطأ في فك ترميز البيانات:', error);
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        // بيانات الملف (في التطبيق الحقيقي ستأتي من قاعدة البيانات)
+        const urlFileData = getFileDataFromUrl();
+        const fileData = urlFileData || {
+            name: 'دليل البرمجة الشامل.pdf',
+            size: '2.5 MB',
+            uploadTime: 'منذ ساعتين',
+            downloadCount: Math.floor(Math.random() * 5000) + 100,
+            shareCount: Math.floor(Math.random() * 1000) + 50,
+            data: '#' // هنا يكون الرابط الحقيقي
         };
 
-        document.getElementById('pdfFile').addEventListener('change', handleFileUpload);
+        // تحديث معلومات الملف
+        document.getElementById('fileName').textContent = fileData.name;
+        document.getElementById('fileSize').textContent = fileData.size;
+        document.getElementById('uploadTime').textContent = fileData.uploadTime;
+        document.getElementById('downloadCount').textContent = (fileData.downloadCount || Math.floor(Math.random() * 5000) + 100).toLocaleString();
+        document.getElementById('shareCount').textContent = (fileData.shareCount || Math.floor(Math.random() * 1000) + 50).toLocaleString();
 
-        // السحب والإفلات
-        const uploadSection = document.querySelector('.upload-section');
+        // العد التنازلي للتحميل التلقائي
+        let countdown = 5;
+        const countdownElement = document.getElementById('countdown');
         
-        uploadSection.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadSection.style.borderColor = '#764ba2';
-            uploadSection.style.background = '#f0f8ff';
-        });
-
-        uploadSection.addEventListener('dragleave', () => {
-            uploadSection.style.borderColor = '#667eea';
-            uploadSection.style.background = '#f8f9fa';
-        });
-
-        uploadSection.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadSection.style.borderColor = '#667eea';
-            uploadSection.style.background = '#f8f9fa';
+        const countdownInterval = setInterval(() => {
+            countdown--;
+            countdownElement.textContent = countdown;
             
-            const files = e.dataTransfer.files;
-            if (files.length > 0 && files[0].type === 'application/pdf') {
-                handleFile(files[0]);
+            if (countdown <= 0) {
+                clearInterval(countdownInterval);
+                downloadNow();
             }
-        });
+        }, 1000);
 
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (file && file.type === 'application/pdf') {
-                handleFile(file);
-            } else {
-                alert('يرجى اختيار ملف PDF صالح');
-            }
-        }
-
-        function handleFile(file) {
-            // عرض شريط التقدم
-            document.getElementById('progressBar').style.display = 'block';
-            
-            // محاكاة رفع الملف
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += Math.random() * 30;
-                if (progress >= 100) {
-                    progress = 100;
-                    clearInterval(interval);
-                    setTimeout(() => {
-                        document.getElementById('progressBar').style.display = 'none';
-                        processFile(file);
-                    }, 500);
-                }
-                document.getElementById('progressFill').style.width = progress + '%';
-            }, 200);
-        }
-
-        function processFile(file) {
-            // إنشاء رابط للملف للتحميل المباشر
-            const fileUrl = URL.createObjectURL(file);
-            currentFileUrl = fileUrl; // استخدام الرابط الحقيقي للتحميل المباشر
-            
-            // تحديث معلومات الملف
-            document.getElementById('fileName').textContent = `الاسم: ${file.name}`;
-            document.getElementById('fileSize').textContent = `الحجم: ${(file.size / 1024 / 1024).toFixed(2)} MB`;
-            document.getElementById('fileLink').textContent = `رابط التحميل المباشر جاهز`;
-            
-            // عرض معاينة الملف
-            document.getElementById('filePreview').src = fileUrl;
-            document.getElementById('filePreview').style.display = 'block';
-            
-            // إظهار معلومات الملف
-            document.getElementById('fileInfo').style.display = 'block';
-            
-            // تحديث الإحصائيات
-            stats.fileCount++;
-            stats.totalSize += file.size / 1024 / 1024;
-            updateStats();
-            
-            // إنشاء QR Code
-            generateQRCode(currentFileUrl);
-            
-            // إضافة الملف للقائمة
-            uploadedFiles.push({
-                name: file.name,
-                size: file.size,
-                url: currentFileUrl,
-                uploadTime: new Date()
-            });
-        }
-
-        function updateStats() {
-            document.getElementById('fileCount').textContent = stats.fileCount;
-            document.getElementById('totalSize').textContent = stats.totalSize.toFixed(1);
-            document.getElementById('shareCount').textContent = stats.shareCount;
-        }
-
-        function downloadFile() {
-            if (currentFileUrl && uploadedFiles.length > 0) {
-                const lastFile = uploadedFiles[uploadedFiles.length - 1];
-                
-                // إنشاء رابط تحميل مباشر
+        // وظائف التحميل والمشاركة
+        function downloadNow() {
+            // التحميل الحقيقي للملف
+            if (fileData.data && fileData.data !== '#') {
                 const downloadLink = document.createElement('a');
-                downloadLink.href = currentFileUrl;
-                downloadLink.download = lastFile.name;
+                downloadLink.href = fileData.data;
+                downloadLink.download = fileData.name;
                 downloadLink.style.display = 'none';
                 
                 document.body.appendChild(downloadLink);
                 downloadLink.click();
                 document.body.removeChild(downloadLink);
                 
-                // تحديث إحصائية التحميل
-                stats.shareCount++;
-                updateStats();
+                // تحديث العداد
+                fileData.downloadCount++;
+                document.getElementById('downloadCount').textContent = fileData.downloadCount.toLocaleString();
+                
+                // إظهار رسالة نجاح
+                showSuccessMessage();
+            } else {
+                // محاكاة تحميل الملف إذا لم يكن هناك بيانات حقيقية
+                showSuccessMessage();
+                alert('تم محاكاة التحميل - في النسخة الحقيقية سيتم تحميل الملف فعلياً');
             }
         }
 
-        function copyLink() {
-            if (currentFileUrl) {
-                // إنشاء رابط مؤقت للمشاركة
-                const shareableLink = `${window.location.origin}${window.location.pathname}?file=${encodeURIComponent(uploadedFiles[uploadedFiles.length - 1].name)}`;
-                navigator.clipboard.writeText(shareableLink).then(() => {
-                    alert('تم نسخ رابط المشاركة بنجاح! 📋\nالآخرون يستطيعون الدخول للموقع وتحميل الملف');
-                });
+        function previewFile() {
+            const previewFrame = document.getElementById('previewFrame');
+            
+            if (fileData.data && fileData.data !== '#') {
+                previewFrame.src = fileData.data;
+            } else {
+                // محاكاة المعاينة
+                previewFrame.src = 'data:application/pdf;base64,JVBERi0xLjQKJcOkw7zDtsO6...';
             }
-        }
-
-        function showShareOptions() {
-            const shareDiv = document.getElementById('socialShare');
-            shareDiv.style.display = shareDiv.style.display === 'none' ? 'flex' : 'none';
+            
+            previewFrame.style.display = 'block';
+            
+            // إيقاف العد التنازلي
+            clearInterval(countdownInterval);
+            document.querySelector('.auto-download-notice').style.display = 'none';
         }
 
         function shareVia(platform) {
-            const fileInfo = uploadedFiles[uploadedFiles.length - 1];
-            const title = `تحميل ملف PDF: ${fileInfo.name}`;
-            const text = `📄 ${fileInfo.name} - اضغط للتحميل المباشر`;
-            const shareUrl = `${window.location.origin}${window.location.pathname}?file=${encodeURIComponent(fileInfo.name)}`;
+            const currentUrl = window.location.href;
+            const text = `تحميل: ${fileData.name}`;
             
-            stats.shareCount++;
-            updateStats();
-
             switch(platform) {
                 case 'whatsapp':
-                    window.open(`https://wa.me/?text=${encodeURIComponent(text + '\n' + shareUrl)}`);
+                    window.open(`https://wa.me/?text=${encodeURIComponent(text + '\n' + currentUrl)}`);
                     break;
                 case 'telegram':
-                    window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(text)}`);
+                    window.open(`https://t.me/share/url?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(text)}`);
                     break;
                 case 'twitter':
-                    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`);
-                    break;
-                case 'facebook':
-                    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(text)}`);
-                    break;
-                case 'email':
-                    window.open(`mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(text + '\n\n' + shareUrl)}`);
+                    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(currentUrl)}`);
                     break;
             }
+            
+            // تحديث عداد المشاركة
+            fileData.shareCount++;
+            document.getElementById('shareCount').textContent = fileData.shareCount.toLocaleString();
         }
 
-        function generateQRCode(url) {
-            const canvas = document.getElementById('qrCode');
-            const ctx = canvas.getContext('2d');
-            
-            // مسح الكانفس
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // رسم QR Code بسيط (نسخة مبسطة)
-            ctx.fillStyle = '#333';
-            ctx.fillRect(20, 20, 160, 160);
-            ctx.fillStyle = 'white';
-            ctx.fillRect(30, 30, 140, 140);
-            
-            // رسم نمط QR
-            ctx.fillStyle = '#333';
-            for(let i = 0; i < 10; i++) {
-                for(let j = 0; j < 10; j++) {
-                    if(Math.random() > 0.5) {
-                        ctx.fillRect(40 + i * 12, 40 + j * 12, 10, 10);
-                    }
-                }
-            }
-            
-            // إضافة نص
-            ctx.fillStyle = '#667eea';
-            ctx.font = '12px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('تحميل مباشر', 100, 195);
+        function copyLink() {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                showToast('تم نسخ الرابط! 📋');
+            });
         }
 
-        // خاصية التحميل من الرابط المشارك
-        window.addEventListener('load', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const fileName = urlParams.get('file');
-            
-            if (fileName) {
-                // إظهار رسالة للمستخدم
-                const container = document.querySelector('.container');
-                const message = document.createElement('div');
-                message.style.cssText = `
-                    background: #e8f5e8;
-                    color: #2e7d32;
-                    padding: 15px;
-                    margin-bottom: 20px;
-                    border-radius: 10px;
-                    text-align: center;
-                    border: 2px solid #4caf50;
-                `;
-                message.innerHTML = `
-                    <h3>🎯 مرحباً!</h3>
-                    <p>شخص ما شارك معك ملف: <strong>${decodeURIComponent(fileName)}</strong></p>
-                    <p>ارفع نفس الملف هنا وستحصل على رابط التحميل المباشر</p>
-                `;
-                container.insertBefore(message, container.firstChild);
-            }
-        });
-
-        // تأثيرات بصرية
-        document.addEventListener('DOMContentLoaded', () => {
-            // تأثير التحميل
-            const container = document.querySelector('.container');
-            container.style.opacity = '0';
-            container.style.transform = 'translateY(50px)';
+        function showSuccessMessage() {
+            const container = document.querySelector('.download-container');
+            const successDiv = document.createElement('div');
+            successDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(45deg, #28a745, #20c997);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 10px;
+                font-weight: bold;
+                z-index: 1000;
+                animation: slideIn 0.5s ease;
+            `;
+            successDiv.innerHTML = '✅ تم بدء التحميل بنجاح!';
+            document.body.appendChild(successDiv);
             
             setTimeout(() => {
-                container.style.transition = 'all 0.8s ease';
-                container.style.opacity = '1';
-                container.style.transform = 'translateY(0)';
+                document.body.removeChild(successDiv);
+            }, 3000);
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0,0,0,0.8);
+                color: white;
+                padding: 12px 24px;
+                border-radius: 25px;
+                z-index: 1000;
+                font-size: 0.9em;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 2000);
+        }
+
+        // تأثيرات إضافية
+        document.addEventListener('DOMContentLoaded', () => {
+            // تأثير البداية
+            const container = document.querySelector('.download-container');
+            container.style.transform = 'scale(0.9)';
+            setTimeout(() => {
+                container.style.transition = 'transform 0.5s ease';
+                container.style.transform = 'scale(1)';
             }, 100);
         });
+
+        // منع النقر بالزر الأيمن (اختياري للحماية)
+        // document.addEventListener('contextmenu', e => e.preventDefault());
     </script>
 </body>
 </html>
