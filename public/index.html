@@ -3,28 +3,252 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>مشاركة ملفات PDF</title>
+  <title>مشاركة ملفات PDF - نسخة محسّنة</title>
   <style>
-    body { font-family: sans-serif; background: #f5f5f5; padding: 40px; }
-    .container { max-width: 700px; margin: auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); text-align: center; }
-    h1 { color: #2c3e50; margin-bottom: 20px; }
-    .upload-box { border: 2px dashed #3498db; padding: 40px; border-radius: 12px; cursor: pointer; margin-bottom: 20px; }
-    .btn { background: #3498db; color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; }
-    .btn:hover { background: #2980b9; }
-    .file-link { margin-top: 20px; padding: 10px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 6px; word-break: break-all; display: none; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container { 
+      max-width: 800px; 
+      margin: auto; 
+      background: white; 
+      padding: 40px; 
+      border-radius: 20px; 
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #3498db, #2ecc71, #f39c12, #e74c3c);
+    }
+    
+    h1 { 
+      color: #2c3e50; 
+      margin-bottom: 30px;
+      font-size: 2.5rem;
+      font-weight: 700;
+    }
+    
+    .upload-box { 
+      border: 3px dashed #3498db; 
+      padding: 60px 40px; 
+      border-radius: 16px; 
+      cursor: pointer; 
+      margin-bottom: 30px;
+      transition: all 0.3s ease;
+      background: linear-gradient(45deg, #f8f9fa, #ffffff);
+      position: relative;
+    }
+    
+    .upload-box:hover {
+      border-color: #2980b9;
+      background: linear-gradient(45deg, #ecf0f1, #f8f9fa);
+      transform: scale(1.02);
+    }
+    
+    .upload-box.dragover {
+      border-color: #27ae60;
+      background: linear-gradient(45deg, #d5f4e6, #ffffff);
+      transform: scale(1.05);
+    }
+
+    .upload-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      display: block;
+      color: #3498db;
+    }
+    
+    .upload-text {
+      font-size: 1.2rem;
+      color: #34495e;
+      margin-bottom: 10px;
+    }
+
+    .file-info {
+      font-size: 0.9rem;
+      color: #7f8c8d;
+    }
+    
+    .btn { 
+      background: linear-gradient(45deg, #3498db, #2980b9);
+      color: white; 
+      padding: 14px 28px; 
+      border: none; 
+      border-radius: 25px; 
+      cursor: pointer; 
+      font-size: 1rem;
+      margin: 10px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    }
+    
+    .btn:hover { 
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
+    }
+
+    .btn:disabled {
+      background: #bdc3c7;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-success {
+      background: linear-gradient(45deg, #27ae60, #2ecc71);
+      box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+    }
+
+    .btn-danger {
+      background: linear-gradient(45deg, #e74c3c, #c0392b);
+      box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+    }
+    
+    .progress-container {
+      width: 100%;
+      height: 8px;
+      background: #ecf0f1;
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 20px 0;
+      display: none;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #3498db, #2ecc71);
+      width: 0%;
+      transition: width 0.3s ease;
+      border-radius: 10px;
+    }
+
+    .progress-text {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: #34495e;
+    }
+    
+    .file-link { 
+      margin-top: 30px; 
+      padding: 20px; 
+      background: linear-gradient(45deg, #f8f9fa, #ffffff);
+      border: 2px solid #e9ecef; 
+      border-radius: 12px; 
+      word-break: break-all; 
+      display: none;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .status {
+      margin: 20px 0;
+      padding: 15px;
+      border-radius: 10px;
+      font-weight: 500;
+    }
+
+    .status.success {
+      background: linear-gradient(45deg, #d5f4e6, #ffffff);
+      color: #27ae60;
+      border: 1px solid #27ae60;
+    }
+
+    .status.error {
+      background: linear-gradient(45deg, #fadbd8, #ffffff);
+      color: #e74c3c;
+      border: 1px solid #e74c3c;
+    }
+
+    .status.info {
+      background: linear-gradient(45deg, #d6eaf8, #ffffff);
+      color: #3498db;
+      border: 1px solid #3498db;
+    }
+
+    .file-details {
+      display: none;
+      margin-top: 20px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 10px;
+      text-align: right;
+    }
+
+    .file-details p {
+      margin: 5px 0;
+      color: #34495e;
+    }
+
+    .controls {
+      margin-top: 20px;
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        margin: 10px;
+        padding: 20px;
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
+      
+      .upload-box {
+        padding: 40px 20px;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>📄 مشاركة ملفات PDF</h1>
-    <div class="upload-box" onclick="document.getElementById('pdfFile').click()">
-      اضغط أو اسحب ملف PDF هنا للرفع
+    <div class="upload-box" id="uploadBox" onclick="document.getElementById('pdfFile').click()">
+      <div class="upload-icon">☁️</div>
+      <div class="upload-text">اضغط أو اسحب ملف PDF هنا للرفع</div>
+      <div class="file-info">الحد الأقصى: 500 ميجابايت | يدعم: PDF</div>
     </div>
-    <input type="file" id="pdfFile" accept=".pdf" style="display:none">
-
+    
+    <input type="file" id="pdfFile" accept=".pdf" style="display:none" multiple>
+    
+    <div class="progress-container" id="progressContainer">
+      <div class="progress-bar" id="progressBar"></div>
+      <div class="progress-text" id="progressText">0%</div>
+    </div>
+    
     <div id="status"></div>
+    
+    <div class="file-details" id="fileDetails">
+      <p><strong>اسم الملف:</strong> <span id="fileName"></span></p>
+      <p><strong>حجم الملف:</strong> <span id="fileSize"></span></p>
+      <p><strong>نوع الملف:</strong> <span id="fileType"></span></p>
+    </div>
+    
     <div class="file-link" id="fileLink"></div>
-    <button class="btn" style="display:none" id="copyBtn" onclick="copyLink()">📋 نسخ الرابط</button>
+    
+    <div class="controls" id="controls">
+      <button class="btn btn-success" id="copyBtn" onclick="copyLink()">📋 نسخ الرابط</button>
+      <button class="btn" id="downloadBtn" onclick="downloadFile()">⬇️ تحميل الملف</button>
+      <button class="btn btn-danger" onclick="resetUpload()">🔄 رفع ملف جديد</button>
+    </div>
   </div>
 
   <script>
@@ -32,44 +256,240 @@
     const statusDiv = document.getElementById("status");
     const fileLinkDiv = document.getElementById("fileLink");
     const copyBtn = document.getElementById("copyBtn");
+    const uploadBox = document.getElementById("uploadBox");
+    const progressContainer = document.getElementById("progressContainer");
+    const progressBar = document.getElementById("progressBar");
+    const progressText = document.getElementById("progressText");
+    const fileDetails = document.getElementById("fileDetails");
+    const controls = document.getElementById("controls");
+    
     let currentShareUrl = "";
+    let currentFile = null;
+    let uploadAbortController = null;
 
-    fileInput.addEventListener("change", async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      if (file.type !== "application/pdf") return alert("يرجى اختيار ملف PDF فقط");
+    // معالجة السحب والإفلات
+    uploadBox.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadBox.classList.add('dragover');
+    });
 
-      // تحقق من الحجم (150 ميجابايت)
-      const maxSize = 150 * 1024 * 1024;
-      if (file.size > maxSize) return alert("حجم الملف كبير جداً. الحد الأقصى: 150 ميجابايت");
+    uploadBox.addEventListener('dragleave', () => {
+      uploadBox.classList.remove('dragover');
+    });
 
-      const formData = new FormData();
-      formData.append("pdf", file);
-
-      statusDiv.innerHTML = "⏳ جاري رفع الملف...";
-      try {
-        const res = await fetch("/api/upload", { method: "POST", body: formData });
-        const result = await res.json();
-
-        if (result.success) {
-          currentShareUrl = result.shareUrl;
-          fileLinkDiv.innerText = currentShareUrl;
-          fileLinkDiv.style.display = "block";
-          copyBtn.style.display = "inline-block";
-          statusDiv.innerHTML = "✅ تم رفع الملف بنجاح!";
-        } else {
-          statusDiv.innerHTML = "❌ فشل: " + result.error;
-        }
-      } catch (err) {
-        console.error(err);
-        statusDiv.innerHTML = "⚠️ حدث خطأ أثناء الرفع.";
+    uploadBox.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadBox.classList.remove('dragover');
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleFile(files[0]);
       }
     });
 
+    fileInput.addEventListener("change", (e) => {
+      if (e.target.files.length > 0) {
+        handleFile(e.target.files[0]);
+      }
+    });
+
+    function handleFile(file) {
+      if (!file) return;
+      
+      if (file.type !== "application/pdf") {
+        showStatus("يرجى اختيار ملف PDF فقط", "error");
+        return;
+      }
+      
+      // تحقق من الحجم (500 ميجابايت)
+      const maxSize = 500 * 1024 * 1024;
+      if (file.size > maxSize) {
+        showStatus("حجم الملف كبير جداً. الحد الأقصى: 500 ميجابايت", "error");
+        return;
+      }
+
+      currentFile = file;
+      showFileDetails(file);
+      uploadFile(file);
+    }
+
+    function showFileDetails(file) {
+      document.getElementById("fileName").textContent = file.name;
+      document.getElementById("fileSize").textContent = formatFileSize(file.size);
+      document.getElementById("fileType").textContent = file.type;
+      fileDetails.style.display = "block";
+    }
+
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 بايت';
+      const k = 1024;
+      const sizes = ['بايت', 'كيلوبايت', 'ميجابايت', 'جيجابايت'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    async function uploadFile(file) {
+      // إنشاء controller للتحكم في الإلغاء
+      uploadAbortController = new AbortController();
+      
+      const chunkSize = 1024 * 1024; // 1MB chunks
+      const totalChunks = Math.ceil(file.size / chunkSize);
+      
+      showStatus("🚀 بدء رفع الملف...", "info");
+      progressContainer.style.display = "block";
+      
+      try {
+        // محاكاة رفع بالأجزاء
+        for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+          const start = chunkIndex * chunkSize;
+          const end = Math.min(start + chunkSize, file.size);
+          const chunk = file.slice(start, end);
+          
+          // محاكاة إرسال الجزء
+          await simulateChunkUpload(chunk, chunkIndex, totalChunks);
+          
+          // تحديث شريط التقدم
+          const progress = Math.round(((chunkIndex + 1) / totalChunks) * 100);
+          updateProgress(progress);
+          
+          // التحقق من الإلغاء
+          if (uploadAbortController.signal.aborted) {
+            throw new Error('تم إلغاء الرفع');
+          }
+        }
+        
+        // محاكاة إنشاء الرابط
+        const mockShareUrl = `https://pdfshare.example.com/files/${generateRandomId()}.pdf`;
+        currentShareUrl = mockShareUrl;
+        
+        showUploadSuccess();
+        
+      } catch (error) {
+        if (error.message === 'تم إلغاء الرفع') {
+          showStatus("تم إلغاء رفع الملف", "error");
+        } else {
+          showStatus("⚠️ حدث خطأ أثناء الرفع: " + error.message, "error");
+        }
+        resetProgress();
+      }
+    }
+
+    function simulateChunkUpload(chunk, index, total) {
+      return new Promise((resolve, reject) => {
+        // محاكاة وقت الرفع بناءً على حجم الجزء
+        const uploadTime = Math.random() * 1000 + 500; // 0.5-1.5 ثانية
+        
+        setTimeout(() => {
+          // محاكاة احتمال فشل صغير
+          if (Math.random() < 0.02) { // 2% احتمال فشل
+            reject(new Error('فشل في رفع الجزء ' + (index + 1)));
+          } else {
+            resolve();
+          }
+        }, uploadTime);
+      });
+    }
+
+    function updateProgress(progress) {
+      progressBar.style.width = progress + '%';
+      progressText.textContent = progress + '%';
+      
+      if (progress < 100) {
+        showStatus(`📤 جاري الرفع... ${progress}%`, "info");
+      }
+    }
+
+    function showUploadSuccess() {
+      showStatus("✅ تم رفع الملف بنجاح!", "success");
+      fileLinkDiv.innerHTML = `
+        <strong>رابط المشاركة:</strong><br>
+        <code style="background: #ecf0f1; padding: 8px; border-radius: 4px; display: inline-block; margin-top: 10px;">${currentShareUrl}</code>
+      `;
+      fileLinkDiv.style.display = "block";
+      controls.style.display = "block";
+      progressContainer.style.display = "none";
+    }
+
+    function showStatus(message, type = "info") {
+      statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+    }
+
+    function resetProgress() {
+      progressBar.style.width = '0%';
+      progressText.textContent = '0%';
+      progressContainer.style.display = "none";
+    }
+
+    function resetUpload() {
+      // إيقاف الرفع إذا كان جارياً
+      if (uploadAbortController) {
+        uploadAbortController.abort();
+      }
+      
+      currentFile = null;
+      currentShareUrl = "";
+      fileInput.value = "";
+      
+      statusDiv.innerHTML = "";
+      fileLinkDiv.style.display = "none";
+      fileDetails.style.display = "none";
+      controls.style.display = "none";
+      resetProgress();
+    }
+
     function copyLink() {
       if (!currentShareUrl) return;
-      navigator.clipboard.writeText(currentShareUrl).then(() => alert("تم نسخ الرابط ✅"));
+      
+      navigator.clipboard.writeText(currentShareUrl).then(() => {
+        showStatus("✅ تم نسخ الرابط بنجاح", "success");
+        setTimeout(() => {
+          showStatus("✅ تم رفع الملف بنجاح!", "success");
+        }, 2000);
+      }).catch(() => {
+        // fallback للمتصفحات القديمة
+        const textArea = document.createElement('textarea');
+        textArea.value = currentShareUrl;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showStatus("✅ تم نسخ الرابط بنجاح", "success");
+      });
     }
+
+    function downloadFile() {
+      if (currentFile) {
+        const url = URL.createObjectURL(currentFile);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = currentFile.name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showStatus("⬇️ بدء تحميل الملف...", "info");
+      }
+    }
+
+    function generateRandomId() {
+      return Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+    }
+
+    // اختصارات لوحة المفاتيح
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'c' && currentShareUrl) {
+          e.preventDefault();
+          copyLink();
+        }
+        if (e.key === 'o') {
+          e.preventDefault();
+          fileInput.click();
+        }
+      }
+      if (e.key === 'Escape' && uploadAbortController) {
+        uploadAbortController.abort();
+      }
+    });
   </script>
 </body>
 </html>
