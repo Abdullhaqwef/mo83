@@ -219,6 +219,7 @@
             <iframe class="file-preview" id="filePreview"></iframe>
             
             <div style="text-align: center;">
+                <button class="copy-btn" onclick="downloadFile()">⬇️ تحميل مباشر</button>
                 <button class="copy-btn" onclick="copyLink()">📋 نسخ الرابط</button>
                 <button class="share-btn" onclick="showShareOptions()">🔗 مشاركة</button>
             </div>
@@ -306,14 +307,14 @@
         }
 
         function processFile(file) {
-            // إنشاء رابط وهمي للملف
+            // إنشاء رابط للملف للتحميل المباشر
             const fileUrl = URL.createObjectURL(file);
-            currentFileUrl = `https://filehost.com/pdf/${Date.now()}/${encodeURIComponent(file.name)}`;
+            currentFileUrl = fileUrl; // استخدام الرابط الحقيقي للتحميل المباشر
             
             // تحديث معلومات الملف
             document.getElementById('fileName').textContent = `الاسم: ${file.name}`;
             document.getElementById('fileSize').textContent = `الحجم: ${(file.size / 1024 / 1024).toFixed(2)} MB`;
-            document.getElementById('fileLink').textContent = currentFileUrl;
+            document.getElementById('fileLink').textContent = `رابط التحميل المباشر جاهز`;
             
             // عرض معاينة الملف
             document.getElementById('filePreview').src = fileUrl;
@@ -345,10 +346,34 @@
             document.getElementById('shareCount').textContent = stats.shareCount;
         }
 
+        function downloadFile() {
+            if (currentFileUrl && uploadedFiles.length > 0) {
+                const lastFile = uploadedFiles[uploadedFiles.length - 1];
+                
+                // إنشاء رابط تحميل مباشر
+                const downloadLink = document.createElement('a');
+                downloadLink.href = currentFileUrl;
+                downloadLink.download = lastFile.name;
+                downloadLink.style.display = 'none';
+                
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+                
+                // تحديث إحصائية التحميل
+                stats.shareCount++;
+                updateStats();
+            }
+        }
+
         function copyLink() {
-            navigator.clipboard.writeText(currentFileUrl).then(() => {
-                alert('تم نسخ الرابط بنجاح! 📋');
-            });
+            if (currentFileUrl) {
+                // إنشاء رابط مؤقت للمشاركة
+                const shareableLink = `${window.location.origin}${window.location.pathname}?file=${encodeURIComponent(uploadedFiles[uploadedFiles.length - 1].name)}`;
+                navigator.clipboard.writeText(shareableLink).then(() => {
+                    alert('تم نسخ رابط المشاركة بنجاح! 📋\nالآخرون يستطيعون الدخول للموقع وتحميل الملف');
+                });
+            }
         }
 
         function showShareOptions() {
@@ -358,27 +383,28 @@
 
         function shareVia(platform) {
             const fileInfo = uploadedFiles[uploadedFiles.length - 1];
-            const title = `مشاركة ملف PDF: ${fileInfo.name}`;
-            const text = `تحميل ملف PDF: ${fileInfo.name}`;
+            const title = `تحميل ملف PDF: ${fileInfo.name}`;
+            const text = `📄 ${fileInfo.name} - اضغط للتحميل المباشر`;
+            const shareUrl = `${window.location.origin}${window.location.pathname}?file=${encodeURIComponent(fileInfo.name)}`;
             
             stats.shareCount++;
             updateStats();
 
             switch(platform) {
                 case 'whatsapp':
-                    window.open(`https://wa.me/?text=${encodeURIComponent(text + '\n' + currentFileUrl)}`);
+                    window.open(`https://wa.me/?text=${encodeURIComponent(text + '\n' + shareUrl)}`);
                     break;
                 case 'telegram':
-                    window.open(`https://t.me/share/url?url=${encodeURIComponent(currentFileUrl)}&text=${encodeURIComponent(text)}`);
+                    window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(text)}`);
                     break;
                 case 'twitter':
-                    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(currentFileUrl)}`);
+                    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`);
                     break;
                 case 'facebook':
-                    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentFileUrl)}`);
+                    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(text)}`);
                     break;
                 case 'email':
-                    window.open(`mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(text + '\n\n' + currentFileUrl)}`);
+                    window.open(`mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(text + '\n\n' + shareUrl)}`);
                     break;
             }
         }
@@ -410,8 +436,35 @@
             ctx.fillStyle = '#667eea';
             ctx.font = '12px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText('امسح للتحميل', 100, 195);
+            ctx.fillText('تحميل مباشر', 100, 195);
         }
+
+        // خاصية التحميل من الرابط المشارك
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const fileName = urlParams.get('file');
+            
+            if (fileName) {
+                // إظهار رسالة للمستخدم
+                const container = document.querySelector('.container');
+                const message = document.createElement('div');
+                message.style.cssText = `
+                    background: #e8f5e8;
+                    color: #2e7d32;
+                    padding: 15px;
+                    margin-bottom: 20px;
+                    border-radius: 10px;
+                    text-align: center;
+                    border: 2px solid #4caf50;
+                `;
+                message.innerHTML = `
+                    <h3>🎯 مرحباً!</h3>
+                    <p>شخص ما شارك معك ملف: <strong>${decodeURIComponent(fileName)}</strong></p>
+                    <p>ارفع نفس الملف هنا وستحصل على رابط التحميل المباشر</p>
+                `;
+                container.insertBefore(message, container.firstChild);
+            }
+        });
 
         // تأثيرات بصرية
         document.addEventListener('DOMContentLoaded', () => {
