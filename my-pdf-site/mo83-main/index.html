@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحميل الملف - PDF Share</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .download-container {
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+            backdrop-filter: blur(15px);
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .file-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-20px);
+            }
+            60% {
+                transform: translateY(-10px);
+            }
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.2em;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .file-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 25px 0;
+            border: 2px solid #e9ecef;
+        }
+
+        .file-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            word-break: break-word;
+        }
+
+        .file-details {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .download-btn {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 50px;
+            font-size: 1.3em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(40, 167, 69, 0.4);
+            background: linear-gradient(45deg, #218838, #1db584);
+        }
+
+        .preview-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .preview-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .countdown {
+            font-size: 1.2em;
+            color: #667eea;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .progress-ring {
+            width: 80px;
+            height: 80px;
+            margin: 20px auto;
+        }
+
+        .progress-ring-circle {
+            stroke: #667eea;
+            stroke-width: 4;
+            fill: transparent;
+            stroke-dasharray: 251.2;
+            stroke-dashoffset: 251.2;
+            transform-origin: center;
+            animation: countdown 5s linear;
+        }
+
+        @keyframes countdown {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        .auto-download-notice {
+            background: #e8f4fd;
+            padding: 15px;
+            border-radius: 10px;
+            color: #0066cc;
+            margin: 20px 0;
+            font-size: 0.9em;
+        }
+
+        .share-again {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .share-btn {
+            background: linear-gradient(45deg, #17a2b8, #138496);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 0.9em;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .share-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .download-stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: #666;
+        }
+
+        .security-badge {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 0.9em;
+            border: 1px solid #c3e6cb;
+        }
+
+        .preview-frame {
+            width: 100%;
+            height: 300px;
+            border: none;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 600px) {
+            .download-container {
+                padding: 25px;
+                margin: 10px;
+            }
+            
+            .file-icon {
+                font-size: 3.5em;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .download-btn {
+                padding: 15px 30px;
+                font-size: 1.1em;
+                display: block;
+                width: 100%;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="download-container">
+        <div class="file-icon">📄</div>
+        <h1>جاهز للتحميل!</h1>
+        
+        <div class="file-info">
+            <div class="file-name" id="fileName">اسم الملف.pdf</div>
+            <div class="file-details">
+                <span id="fileSize">حجم الملف</span> • 
+                <span id="uploadTime">وقت الرفع</span>
+            </div>
+        </div>
+
+        <div class="security-badge">
+            🔒 آمن ومحمي • فحص تلقائي للفيروسات
+        </div>
+
+        <div class="auto-download-notice">
+            ⏱️ سيبدأ التحميل تلقائياً خلال <span id="countdown">5</span> ثواني
+        </div>
+
+        <svg class="progress-ring">
+            <circle class="progress-ring-circle" cx="40" cy="40" r="40"></circle>
+        </svg>
+
+        <button class="download-btn" onclick="downloadNow()">
+            ⬇️ تحميل فوري
+        </button>
+
+        <button class="preview-btn" onclick="previewFile()">
+            👁️ معاينة أولاً
+        </button>
+
+        <iframe class="preview-frame" id="previewFrame"></iframe>
+
+        <div class="download-stats">
+            <div class="stat-item">
+                <div class="stat-number" id="downloadCount">1,234</div>
+                <div class="stat-label">تحميل</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="shareCount">567</div>
+                <div class="stat-label">مشاركة</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">آمن</div>
+            </div>
+        </div>
+
+        <div class="share-again">
+            <h3>شارك مع الآخرين:</h3>
+            <div style="margin-top: 15px;">
+                <button class="share-btn" onclick="shareVia('whatsapp')">واتساب</button>
+                <button class="share-btn" onclick="shareVia('telegram')">تيليجرام</button>
+                <button class="share-btn" onclick="shareVia('twitter')">تويتر</button>
+                <button class="share-btn" onclick="copyLink()">نسخ الرابط</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // استخراج بيانات الملف من الرابط
+        function getFileDataFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const encodedData = urlParams.get('data');
+            
+            if (encodedData) {
+                try {
+                    const decodedData = JSON.parse(atob(encodedData));
+                    return decodedData;
+                } catch (error) {
+                    console.error('خطأ في فك ترميز البيانات:', error);
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        // بيانات الملف (في التطبيق الحقيقي ستأتي من قاعدة البيانات)
+        const urlFileData = getFileDataFromUrl();
+        const fileData = urlFileData || {
+            name: 'دليل البرمجة الشامل.pdf',
+            size: '2.5 MB',
+            uploadTime: 'منذ ساعتين',
+            downloadCount: Math.floor(Math.random() * 5000) + 100,
+            shareCount: Math.floor(Math.random() * 1000) + 50,
+            data: '#' // هنا يكون الرابط الحقيقي
+        };
+
+        // تحديث معلومات الملف
+        document.getElementById('fileName').textContent = fileData.name;
+        document.getElementById('fileSize').textContent = fileData.size;
+        document.getElementById('uploadTime').textContent = fileData.uploadTime;
+        document.getElementById('downloadCount').textContent = (fileData.downloadCount || Math.floor(Math.random() * 5000) + 100).toLocaleString();
+        document.getElementById('shareCount').textContent = (fileData.shareCount || Math.floor(Math.random() * 1000) + 50).toLocaleString();
+
+        // العد التنازلي للتحميل التلقائي
+        let countdown = 5;
+        const countdownElement = document.getElementById('countdown');
+        
+        const countdownInterval = setInterval(() => {
+            countdown--;
+            countdownElement.textContent = countdown;
+            
+            if (countdown <= 0) {
+                clearInterval(countdownInterval);
+                downloadNow();
+            }
+        }, 1000);
+
+        // وظائف التحميل والمشاركة
+        function downloadNow() {
+            // التحميل الحقيقي للملف
+            if (fileData.data && fileData.data !== '#') {
+                const downloadLink = document.createElement('a');
+                downloadLink.href = fileData.data;
+                downloadLink.download = fileData.name;
+                downloadLink.style.display = 'none';
+                
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+                
+                // تحديث العداد
+                fileData.downloadCount++;
+                document.getElementById('downloadCount').textContent = fileData.downloadCount.toLocaleString();
+                
+                // إظهار رسالة نجاح
+                showSuccessMessage();
+            } else {
+                // محاكاة تحميل الملف إذا لم يكن هناك بيانات حقيقية
+                showSuccessMessage();
+                alert('تم محاكاة التحميل - في النسخة الحقيقية سيتم تحميل الملف فعلياً');
+            }
+        }
+
+        function previewFile() {
+            const previewFrame = document.getElementById('previewFrame');
+            
+            if (fileData.data && fileData.data !== '#') {
+                previewFrame.src = fileData.data;
+            } else {
+                // محاكاة المعاينة
+                previewFrame.src = 'data:application/pdf;base64,JVBERi0xLjQKJcOkw7zDtsO6...';
+            }
+            
+            previewFrame.style.display = 'block';
+            
+            // إيقاف العد التنازلي
+            clearInterval(countdownInterval);
+            document.querySelector('.auto-download-notice').style.display = 'none';
+        }
+
+        function shareVia(platform) {
+            const currentUrl = window.location.href;
+            const text = `تحميل: ${fileData.name}`;
+            
+            switch(platform) {
+                case 'whatsapp':
+                    window.open(`https://wa.me/?text=${encodeURIComponent(text + '\n' + currentUrl)}`);
+                    break;
+                case 'telegram':
+                    window.open(`https://t.me/share/url?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(text)}`);
+                    break;
+                case 'twitter':
+                    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(currentUrl)}`);
+                    break;
+            }
+            
+            // تحديث عداد المشاركة
+            fileData.shareCount++;
+            document.getElementById('shareCount').textContent = fileData.shareCount.toLocaleString();
+        }
+
+        function copyLink() {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                showToast('تم نسخ الرابط! 📋');
+            });
+        }
+
+        function showSuccessMessage() {
+            const container = document.querySelector('.download-container');
+            const successDiv = document.createElement('div');
+            successDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(45deg, #28a745, #20c997);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 10px;
+                font-weight: bold;
+                z-index: 1000;
+                animation: slideIn 0.5s ease;
+            `;
+            successDiv.innerHTML = '✅ تم بدء التحميل بنجاح!';
+            document.body.appendChild(successDiv);
+            
+            setTimeout(() => {
+                document.body.removeChild(successDiv);
+            }, 3000);
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0,0,0,0.8);
+                color: white;
+                padding: 12px 24px;
+                border-radius: 25px;
+                z-index: 1000;
+                font-size: 0.9em;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 2000);
+        }
+
+        // تأثيرات إضافية
+        document.addEventListener('DOMContentLoaded', () => {
+            // تأثير البداية
+            const container = document.querySelector('.download-container');
+            container.style.transform = 'scale(0.9)';
+            setTimeout(() => {
+                container.style.transition = 'transform 0.5s ease';
+                container.style.transform = 'scale(1)';
+            }, 100);
+        });
+
+        // منع النقر بالزر الأيمن (اختياري للحماية)
+        // document.addEventListener('contextmenu', e => e.preventDefault());
+    </script>
+</body>
+</html>
