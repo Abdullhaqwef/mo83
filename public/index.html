@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مشاركة ملفات PDF</title>
+  <style>
+    body { font-family: sans-serif; background: #f5f5f5; padding: 40px; }
+    .container { max-width: 700px; margin: auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); text-align: center; }
+    h1 { color: #2c3e50; margin-bottom: 20px; }
+    .upload-box { border: 2px dashed #3498db; padding: 40px; border-radius: 12px; cursor: pointer; margin-bottom: 20px; }
+    .btn { background: #3498db; color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-size: 1rem; }
+    .btn:hover { background: #2980b9; }
+    .file-link { margin-top: 20px; padding: 10px; background: #f8f9fa; border: 1px solid #ddd; border-radius: 6px; word-break: break-all; display: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📄 مشاركة ملفات PDF</h1>
+    <div class="upload-box" onclick="document.getElementById('pdfFile').click()">
+      اضغط أو اسحب ملف PDF هنا للرفع
+    </div>
+    <input type="file" id="pdfFile" accept=".pdf" style="display:none">
+
+    <div id="status"></div>
+    <div class="file-link" id="fileLink"></div>
+    <button class="btn" style="display:none" id="copyBtn" onclick="copyLink()">📋 نسخ الرابط</button>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById("pdfFile");
+    const statusDiv = document.getElementById("status");
+    const fileLinkDiv = document.getElementById("fileLink");
+    const copyBtn = document.getElementById("copyBtn");
+    let currentShareUrl = "";
+
+    fileInput.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.type !== "application/pdf") {
+        return alert("يرجى اختيار ملف PDF فقط");
+      }
+
+      const formData = new FormData();
+      formData.append("pdf", file);
+
+      statusDiv.innerHTML = "⏳ جاري رفع الملف...";
+      try {
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData
+        });
+        const result = await res.json();
+
+        if (result.success) {
+          currentShareUrl = result.shareUrl;
+          fileLinkDiv.innerText = currentShareUrl;
+          fileLinkDiv.style.display = "block";
+          copyBtn.style.display = "inline-block";
+          statusDiv.innerHTML = "✅ تم رفع الملف بنجاح!";
+        } else {
+          statusDiv.innerHTML = "❌ فشل: " + result.error;
+        }
+      } catch (err) {
+        console.error(err);
+        statusDiv.innerHTML = "⚠️ حدث خطأ أثناء الرفع.";
+      }
+    });
+
+    function copyLink() {
+      if (!currentShareUrl) return;
+      navigator.clipboard.writeText(currentShareUrl).then(() => {
+        alert("تم نسخ الرابط ✅");
+      });
+    }
+  </script>
+</body>
+</html>
