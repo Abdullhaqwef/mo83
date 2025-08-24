@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>معاينة الملف - مشاركة PDF</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container { 
+      max-width: 1000px; 
+      margin: auto; 
+      background: white; 
+      border-radius: 20px; 
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #3498db, #2ecc71, #f39c12, #e74c3c);
+    }
+
+    .header {
+      background: linear-gradient(45deg, #f8f9fa, #ffffff);
+      padding: 40px;
+      text-align: center;
+      border-bottom: 1px solid #e9ecef;
+    }
+    
+    .header h1 { 
+      color: #2c3e50; 
+      margin-bottom: 10px;
+      font-size: 2.5rem;
+      font-weight: 700;
+    }
+
+    .header p {
+      color: #7f8c8d;
+      font-size: 1.1rem;
+    }
+    
+    .file-info {
+      padding: 40px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      align-items: start;
+    }
+
+    .info-card {
+      background: linear-gradient(45deg, #f8f9fa, #ffffff);
+      padding: 30px;
+      border-radius: 15px;
+      border: 2px solid #e9ecef;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    .info-card h3 {
+      color: #2c3e50;
+      margin-bottom: 20px;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .info-item {
+      margin-bottom: 15px;
+      padding: 10px 0;
+      border-bottom: 1px solid #ecf0f1;
+    }
+
+    .info-item:last-child {
+      border-bottom: none;
+    }
+
+    .info-label {
+      color: #34495e;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .info-value {
+      color: #2c3e50;
+      font-size: 1.1rem;
+    }
+
+    .file-size-large {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #3498db;
+    }
+
+    .actions {
+      padding: 40px;
+      background: #f8f9fa;
+      text-align: center;
+    }
+
+    .btn { 
+      background: linear-gradient(45deg, #3498db, #2980b9);
+      color: white; 
+      padding: 15px 30px; 
+      border: none; 
+      border-radius: 25px; 
+      cursor: pointer; 
+      font-size: 1.1rem;
+      margin: 10px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .btn:hover { 
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
+    }
+
+    .btn-success {
+      background: linear-gradient(45deg, #27ae60, #2ecc71);
+      box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+    }
+
+    .btn-success:hover {
+      box-shadow: 0 8px 25px rgba(46, 204, 113, 0.4);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(45deg, #95a5a6, #7f8c8d);
+      box-shadow: 0 4px 15px rgba(149, 165, 166, 0.3);
+    }
+
+    .btn-secondary:hover {
+      box-shadow: 0 8px 25px rgba(149, 165, 166, 0.4);
+    }
+
+    .pdf-preview {
+      margin-top: 30px;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+
+    .pdf-frame {
+      width: 100%;
+      height: 600px;
+      border: none;
+      border-radius: 15px;
+    }
+
+    .error-message {
+      background: linear-gradient(45deg, #fadbd8, #ffffff);
+      color: #e74c3c;
+      border: 2px solid #e74c3c;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 50px;
+      color: #7f8c8d;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 50px;
+      height: 50px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .back-link {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #3498db;
+      padding: 10px 20px;
+      border-radius: 25px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .back-link:hover {
+      background: rgba(255, 255, 255, 1);
+      transform: scale(1.05);
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        margin: 10px;
+      }
+      
+      .header {
+        padding: 20px;
+      }
+
+      .header h1 {
+        font-size: 2rem;
+      }
+      
+      .file-info {
+        grid-template-columns: 1fr;
+        padding: 20px;
+        gap: 20px;
+      }
+
+      .info-card {
+        padding: 20px;
+      }
+
+      .actions {
+        padding: 20px;
+      }
+
+      .btn {
+        width: 100%;
+        margin: 5px 0;
+        justify-content: center;
+      }
+
+      .pdf-frame {
+        height: 400px;
+      }
+
+      .back-link {
+        position: static;
+        display: inline-block;
+        margin-bottom: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="/" class="back-link">🏠 العودة للرئيسية</a>
+    
+    <div class="header">
+      <h1>📄 معاينة الملف</h1>
+      <p>يمكنك معاينة الملف وتحميله من هنا</p>
+    </div>
+
+    <div id="loading" class="loading">
+      <div class="loading-spinner"></div>
+      <p>جاري تحميل معلومات الملف...</p>
+    </div>
+
+    <div id="content" style="display: none;">
+      <div class="file-info">
+        <div class="info-card">
+          <h3>📋 معلومات الملف</h3>
+          <div class="info-item">
+            <div class="info-label">اسم الملف:</div>
+            <div class="info-value" id="fileName">--</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">حجم الملف:</div>
+            <div class="info-value file-size-large" id="fileSize">--</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">نوع الملف:</div>
+            <div class="info-value">PDF Document</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">تاريخ الرفع:</div>
+            <div class="info-value" id="uploadDate">--</div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3>🔗 روابط التحميل</h3>
+          <div class="info-item">
+            <div class="info-label">معاينة مباشرة:</div>
+            <div class="info-value">
+              <a href="#" id="viewLink" class="btn btn-secondary" target="_blank">
+                👁️ عرض الملف
+              </a>
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">تحميل الملف:</div>
+            <div class="info-value">
+              <a href="#" id="downloadLink" class="btn btn-success">
+                ⬇️ تحميل PDF
+              </a>
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">مشاركة الرابط:</div>
+            <div class="info-value">
+              <button class="btn" onclick="shareFile()">
+                📱 مشاركة
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <h3 style="margin-bottom: 20px; color: #2c3e50;">خيارات إضافية</h3>
+        <button class="btn" onclick="copyLink()">📋 نسخ الرابط</button>
+        <button class="btn btn-secondary" onclick="printFile()">🖨️ طباعة</button>
+        <a href="/" class="btn btn-secondary">⬆️ رفع ملف جديد</a>
+      </div>
+
+      <div class="pdf-preview">
+        <iframe id="pdfFrame" class="pdf-frame" src=""></iframe>
+      </div>
+    </div>
+
+    <div id="errorMessage" class="error-message" style="display: none;">
+      <h3>❌ خطأ في تحميل الملف</h3>
+      <p>الملف المطلوب غير موجود أو تم حذفه.</p>
+      <a href="/" class="btn" style="margin-top: 20px;">العودة للرئيسية</a>
+    </div>
+  </div>
+
+  <script>
+    // الحصول على اسم الملف من URL
+    const pathParts = window.location.pathname.split('/');
+    const filename = pathParts[pathParts.length - 1];
+    
+    console.log('اسم الملف:', filename);
+
+    // تحميل معلومات الملف
+    async function loadFileInfo() {
+      try {
+        // محاولة تحميل الملف للتأكد من وجوده
+        const response = await fetch(`/api/file-info/${filename}`);
+        
+        if (!response.ok) {
+          throw new Error('الملف غير موجود');
+        }
+        
+        const fileInfo = await response.json();
+        displayFileInfo(fileInfo);
+        
+      } catch (error) {
+        console.error('خطأ في تحميل معلومات الملف:', error);
+        showError();
+      }
+    }
+
+    function displayFileInfo(info) {
+      // إخفاء شاشة التحميل وعرض المحتوى
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('content').style.display = 'block';
+      
+      // تعبئة معلومات الملف
+      document.getElementById('fileName').textContent = info.originalName || filename;
+      document.getElementById('fileSize').textContent = formatFileSize(info.size);
+      document.getElementById('uploadDate').textContent = formatDate(info.uploadDate);
+      
+      // إعداد الروابط
+      const baseUrl = window.location.origin;
+      const fileUrl = `${baseUrl}/files/${filename}`;
+      const downloadUrl = `${fileUrl}?display=download`;
+      
+      document.getElementById('viewLink').href = fileUrl;
+      document.getElementById('downloadLink').href = downloadUrl;
+      document.getElementById('pdfFrame').src = fileUrl;
+      
+      console.log('تم تحميل معلومات الملف بنجاح');
+    }
+
+    function showError() {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('errorMessage').style.display = 'block';
+    }
+
+    function formatFileSize(bytes) {
+      if (!bytes) return 'غير محدد';
+      if (bytes === 0) return '0 بايت';
+      
+      const k = 1024;
+      const sizes = ['بايت', 'كيلوبايت', 'ميجابايت', 'جيجابايت'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function formatDate(dateString) {
+      if (!dateString) return 'غير محدد';
+      
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffTime = Math.abs(now - date);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 1) {
+        return 'اليوم';
+      } else if (diffDays === 2) {
+        return 'أمس';
+      } else if (diffDays <= 7) {
+        return `منذ ${diffDays} أيام`;
+      } else {
+        return date.toLocaleDateString('ar-SA');
+      }
+    }
+
+    async function copyLink() {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        
+        // تأثير بصري
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '✅ تم النسخ!';
+        btn.style.background = 'linear-gradient(45deg, #27ae60, #2ecc71)';
+        
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.style.background = 'linear-gradient(45deg, #3498db, #2980b9)';
+        }, 2000);
+        
+      } catch (err) {
+        console.error('فشل في نسخ الرابط:', err);
+        alert('فشل في نسخ الرابط. انسخه يدوياً من شريط العناوين.');
+      }
+    }
+
+    async function shareFile() {
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: 'ملف PDF',
+            text: 'شاهد هذا الملف',
+            url: window.location.href
+          });
+        } catch (err) {
+          if (err.name !== 'AbortError') {
+            console.error('خطأ في المشاركة:', err);
+            copyLink();
+          }
+        }
+      } else {
+        copyLink();
+      }
+    }
+
+    function printFile() {
+      const printWindow = window.open(`/files/${filename}`, '_blank');
+      printWindow.onload = function() {
+        setTimeout(() => {
+          printWindow.print();
+        }, 1000);
+      };
+    }
+
+    // محاولة تحميل معلومات الملف أو عرض معلومات أساسية
+    async function init() {
+      try {
+        await loadFileInfo();
+      } catch (error) {
+        // في حالة عدم وجود API، عرض معلومات أساسية
+        console.log('لا يوجد API لمعلومات الملف، عرض معلومات أساسية');
+        
+        const basicInfo = {
+          originalName: filename,
+          size: null,
+          uploadDate: new Date().toISOString()
+        };
+        
+        displayFileInfo(basicInfo);
+      }
+    }
+
+    // بدء التطبيق
+    init();
+  </script>
+</body>
+</html>
