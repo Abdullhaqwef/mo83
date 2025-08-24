@@ -309,7 +309,14 @@
 
       currentFile = file;
       showFileDetails(file);
-      uploadFile(file);
+      
+      // استخدام الرفع مع مراقبة التقدم
+      uploadFileWithProgress(file).catch(error => {
+        if (error.message !== 'تم إلغاء الرفع') {
+          showStatus("⚠️ حدث خطأ أثناء الرفع: " + error.message, "error");
+        }
+        resetProgress();
+      });
     }
 
     function showFileDetails(file) {
@@ -331,40 +338,37 @@
       // إنشاء controller للتحكم في الإلغاء
       uploadAbortController = new AbortController();
       
-      const chunkSize = 1024 * 1024; // 1MB chunks
-      const totalChunks = Math.ceil(file.size / chunkSize);
-      
       showStatus("🚀 بدء رفع الملف...", "info");
       progressContainer.style.display = "block";
       
+      // إنشاء FormData لإرسال الملف
+      const formData = new FormData();
+      formData.append("pdf", file);
+      
       try {
-        // محاكاة رفع بالأجزاء
-        for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
-          const start = chunkIndex * chunkSize;
-          const end = Math.min(start + chunkSize, file.size);
-          const chunk = file.slice(start, end);
-          
-          // محاكاة إرسال الجزء
-          await simulateChunkUpload(chunk, chunkIndex, totalChunks);
-          
-          // تحديث شريط التقدم
-          const progress = Math.round(((chunkIndex + 1) / totalChunks) * 100);
-          updateProgress(progress);
-          
-          // التحقق من الإلغاء
-          if (uploadAbortController.signal.aborted) {
-            throw new Error('تم إلغاء الرفع');
-          }
+        // إرسال الملف للخادم مع مراقبة التقدم
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+          signal: uploadAbortController.signal,
+          // لا نضع Content-Type header - سيتم تعيينه تلقائياً للـ FormData
+        });
+
+        if (!response.ok) {
+          throw new Error(`خطأ HTTP: ${response.status}`);
+        }
+
+        const result = await response.json();
+        
+        if (result.success) {
+          currentShareUrl = result.shareUrl;
+          showUploadSuccess();
+        } else {
+          throw new Error(result.error || "حدث خطأ غير محدد");
         }
         
-        // محاكاة إنشاء الرابط
-        const mockShareUrl = `https://pdfshare.example.com/files/${generateRandomId()}.pdf`;
-        currentShareUrl = mockShareUrl;
-        
-        showUploadSuccess();
-        
       } catch (error) {
-        if (error.message === 'تم إلغاء الرفع') {
+        if (error.name === 'AbortError') {
           showStatus("تم إلغاء رفع الملف", "error");
         } else {
           showStatus("⚠️ حدث خطأ أثناء الرفع: " + error.message, "error");
@@ -373,19 +377,64 @@
       }
     }
 
-    function simulateChunkUpload(chunk, index, total) {
+    // إضافة مراقبة تقدم الرفع (يعمل مع XMLHttpRequest)
+    async function uploadFileWithProgress(file) {
+      uploadAbortController = new AbortController();
+      
+      showStatus("🚀 بدء رفع الملف...", "info");
+      progressContainer.style.display = "block";
+      
       return new Promise((resolve, reject) => {
-        // محاكاة وقت الرفع بناءً على حجم الجزء
-        const uploadTime = Math.random() * 1000 + 500; // 0.5-1.5 ثانية
+        const formData = new FormData();
+        formData.append("pdf", file);
         
-        setTimeout(() => {
-          // محاكاة احتمال فشل صغير
-          if (Math.random() < 0.02) { // 2% احتمال فشل
-            reject(new Error('فشل في رفع الجزء ' + (index + 1)));
-          } else {
-            resolve();
+        const xhr = new XMLHttpRequest();
+        
+        // مراقبة تقدم الرفع
+        xhr.upload.addEventListener('progress', (e) => {
+          if (e.lengthComputable) {
+            const progress = Math.round((e.loaded / e.total) * 100);
+            updateProgress(progress);
           }
-        }, uploadTime);
+        });
+        
+        // عند اكتمال الرفع
+        xhr.addEventListener('load', () => {
+          if (xhr.status === 200) {
+            try {
+              const result = JSON.parse(xhr.responseText);
+              if (result.success) {
+                currentShareUrl = result.shareUrl;
+                showUploadSuccess();
+                resolve(result);
+              } else {
+                reject(new Error(result.error || "حدث خطأ غير محدد"));
+              }
+            } catch (error) {
+              reject(new Error("خطأ في تحليل استجابة الخادم"));
+            }
+          } else {
+            reject(new Error(`خطأ HTTP: ${xhr.status}`));
+          }
+        });
+        
+        // عند حدوث خطأ
+        xhr.addEventListener('error', () => {
+          reject(new Error("فشل في الاتصال بالخادم"));
+        });
+        
+        // عند إلغاء الرفع
+        xhr.addEventListener('abort', () => {
+          reject(new Error("تم إلغاء الرفع"));
+        });
+        
+        // ربط إلغاء الرفع بالـ AbortController
+        uploadAbortController.signal.addEventListener('abort', () => {
+          xhr.abort();
+        });
+        
+        xhr.open('POST', '/api/upload');
+        xhr.send(formData);
       });
     }
 
@@ -403,6 +452,8 @@
       fileLinkDiv.innerHTML = `
         <strong>رابط المشاركة:</strong><br>
         <code style="background: #ecf0f1; padding: 8px; border-radius: 4px; display: inline-block; margin-top: 10px;">${currentShareUrl}</code>
+        <br><br>
+        <a href="${currentShareUrl}" target="_blank" style="color: #3498db; text-decoration: none;">🔗 عرض الملف في نافذة جديدة</a>
       `;
       fileLinkDiv.style.display = "block";
       controls.style.display = "block";
@@ -504,7 +555,13 @@
     }
 
     function downloadFile() {
-      if (currentFile) {
+      if (currentShareUrl) {
+        // إنشاء رابط تحميل من رابط المشاركة
+        const downloadUrl = currentShareUrl + '?display=download';
+        window.open(downloadUrl, '_blank');
+        showStatus("⬇️ بدء تحميل الملف...", "info");
+      } else if (currentFile) {
+        // تحميل الملف المحلي كـ fallback
         const url = URL.createObjectURL(currentFile);
         const a = document.createElement('a');
         a.href = url;
@@ -524,7 +581,7 @@
     // اختصارات لوحة المفاتيح
     document.addEventListener('keydown', (e) => {
       if (e.ctrlKey || e.metaKey) {
-        if (e.key === 'c' && currentShareUrl) {
+        if (e.key === 'c' && currentShareUrl && e.target.tagName !== 'INPUT') {
           e.preventDefault();
           copyLink();
         }
