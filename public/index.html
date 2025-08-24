@@ -37,19 +37,18 @@
     fileInput.addEventListener("change", async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      if (file.type !== "application/pdf") {
-        return alert("يرجى اختيار ملف PDF فقط");
-      }
+      if (file.type !== "application/pdf") return alert("يرجى اختيار ملف PDF فقط");
+
+      // تحقق من الحجم (150 ميجابايت)
+      const maxSize = 150 * 1024 * 1024;
+      if (file.size > maxSize) return alert("حجم الملف كبير جداً. الحد الأقصى: 150 ميجابايت");
 
       const formData = new FormData();
       formData.append("pdf", file);
 
       statusDiv.innerHTML = "⏳ جاري رفع الملف...";
       try {
-        const res = await fetch("/api/upload", {
-          method: "POST",
-          body: formData
-        });
+        const res = await fetch("/api/upload", { method: "POST", body: formData });
         const result = await res.json();
 
         if (result.success) {
@@ -69,9 +68,7 @@
 
     function copyLink() {
       if (!currentShareUrl) return;
-      navigator.clipboard.writeText(currentShareUrl).then(() => {
-        alert("تم نسخ الرابط ✅");
-      });
+      navigator.clipboard.writeText(currentShareUrl).then(() => alert("تم نسخ الرابط ✅"));
     }
   </script>
 </body>
